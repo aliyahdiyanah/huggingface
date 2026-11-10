@@ -121,7 +121,7 @@
 
   <div class="container mt-5">
 
-    <!-- Section 1: Image Classification (Computer Vision via Preset URL) -->
+    <!-- Section 1: Image Classification -->
     <div class="card-custom">
       <h3 class="fw-bold mb-3 text-white">1. AI Image Classification (Computer Vision)</h3>
       <p class="text-muted small mb-4">Select a sample image below or enter a direct image URL to classify it using a Vision Transformer model.</p>
@@ -132,11 +132,11 @@
           <input type="password" id="hfTokenImg" class="form-control" placeholder="hf_..." />
         </div>
         <div class="col-md-8">
-          <label class="form-label fw-bold text-light small">Image URL (Or click sample below)</label>
+          <label class="form-label fw-bold text-light small">Image URL</label>
           <input type="text" id="imageUrl" class="form-control" placeholder="Select a sample image below..." />
         </div>
         
-        <!-- Sample Image Presets to bypass CORS -->
+        <!-- Sample Image Presets -->
         <div class="col-12">
           <label class="form-label fw-bold text-light small mb-2">Quick Sample Images:</label>
           <div class="d-flex gap-3 align-items-center flex-wrap">
@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <!-- Section 2: Text Sentiment Analysis (NLP) -->
+    <!-- Section 2: Text Sentiment Analysis -->
     <div class="card-custom">
       <h3 class="fw-bold mb-3 text-white">2. AI Text Sentiment Analysis (NLP)</h3>
       <p class="text-muted small mb-4">Enter customer feedback or text to analyze emotional polarity (Positive / Negative) using transformer models.</p>
@@ -194,14 +194,13 @@
   </div>
 
 <script>
-// Function to handle preset image selection
 function selectPreset(url) {
   document.getElementById("imageUrl").value = url;
 }
 
-// 1. Image Classification Function using Hugging Face Server-Side URL Fetcher
 async function runImageClassification() {
-  const token = document.getElementById("hfTokenImg").value.trim();
+  // .replace(/[^\x00-\x7F]/g, "") membersihkan sebarang aksara pelik/non-ISO
+  const token = document.getElementById("hfTokenImg").value.trim().replace(/[^\x00-\x7F]/g, "");
   const imageUrl = document.getElementById("imageUrl").value.trim();
   const output = document.getElementById("imgOutput");
   const btn = document.getElementById("imgBtn");
@@ -211,10 +210,9 @@ async function runImageClassification() {
 
   btn.disabled = true;
   btn.textContent = "Processing image via Vision Transformer...";
-  output.textContent = "Sending image URL payload directly to Hugging Face model...";
+  output.textContent = "Sending request to Hugging Face model...";
 
   try {
-    // Send URL directly as JSON to Hugging Face (Bypasses browser CORS fetch restriction)
     const response = await fetch(
       "https://api-inference.huggingface.co/models/google/vit-base-patch16-224",
       {
@@ -234,14 +232,13 @@ async function runImageClassification() {
   } catch (err) {
     output.textContent = "Error: " + err.message;
   } finally {
-    btn.disabled= false;
+    btn.disabled = false;
     btn.textContent = "Analyze Image via Vision Model";
   }
 }
 
-// 2. Text Sentiment Analysis Function
 async function runTextSentiment() {
-  const token = document.getElementById("hfTokenText").value.trim();
+  const token = document.getElementById("hfTokenText").value.trim().replace(/[^\x00-\x7F]/g, "");
   const text = document.getElementById("textInput").value.trim();
   const output = document.getElementById("textOutput");
   const btn = document.getElementById("textBtn");
@@ -259,7 +256,7 @@ async function runTextSentiment() {
       {
         method: "POST",
         headers: {
-          "Authorization": "Bearer "+ token,
+          "Authorization": "Bearer " + token,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ inputs: text })
