@@ -108,10 +108,10 @@
 
   <div class="container mt-5">
 
-    <!-- Section 1: Image Classification (Computer Vision) -->
+    <!-- Section 1: Image Classification (Computer Vision via URL) -->
     <div class="card-custom">
       <h3 class="fw-bold mb-3 text-white">1. AI Image Classification (Computer Vision)</h3>
-      <p class="text-muted small mb-4">Upload an image (e.g., animal, vehicle, object) to classify it using a pre-trained Vision Transformer model.</p>
+      <p class="text-muted small mb-4">Enter a public image URL (e.g., a picture of a cat, car, or object) to classify it using a Vision Transformer model.</p>
       
       <div class="row g-3">
         <div class="col-md-4">
@@ -119,8 +119,8 @@
           <input type="password" id="hfTokenImg" class="form-control" placeholder="hf_..." />
         </div>
         <div class="col-md-8">
-          <label class="form-label fw-bold text-light small">Select Image File</label>
-          <input type="file" id="imageFile" class="form-control" accept="image/*" />
+          <label class="form-label fw-bold text-light small">Image Public URL</label>
+          <input type="text" id="imageUrl" class="form-control" placeholder="https://images.unsplash.com/... (Paste image link here)" />
         </div>
         <div class="col-12 mt-3">
           <button onclick="runImageClassification()" id="imgBtn" class="btn btn-gold w-100 py-3 shadow">Analyze Image via Vision Model</button>
@@ -129,7 +129,7 @@
 
       <div class="mt-4">
         <label class="form-label fw-bold text-light small">Classification Result:</label>
-        <pre id="imgOutput">Awaiting image upload and token authorization...</pre>
+        <pre id="imgOutput">Awaiting image URL and token authorization...</pre>
       </div>
     </div>
 
@@ -161,32 +161,36 @@
   </div>
 
 <script>
-// 1. Image Classification Function
+// 1. Image Classification via URL Function
 async function runImageClassification() {
   const token = document.getElementById("hfTokenImg").value.trim();
-  const fileInput = document.getElementById("imageFile").files[0];
+  const imageUrl = document.getElementById("imageUrl").value.trim();
   const output = document.getElementById("imgOutput");
   const btn = document.getElementById("imgBtn");
 
   if (!token) { alert("Please enter your Hugging Face Access Token."); return; }
-  if (!fileInput) { alert("Please select an image file."); return; }
+  if (!imageUrl) { alert("Please enter a valid image URL."); return; }
 
   btn.disabled = true;
-  btn.textContent = "Processing image via Vision Transformer...";
-  output.textContent = "Uploading image to Hugging Face serverless node...";
+  btn.textContent = "Downloading and processing image via Vision Transformer...";
+  output.textContent = "Fetching image data from URL and sending to Hugging Face...";
 
   try {
-    const arrayBuffer = await fileInput.arrayBuffer();
+    // Fetch image as blob from URL
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) throw new Error("Failed to fetch image from the provided URL. Ensure it's a direct public link.");
+    const imageBlob = await imageResponse.blob();
 
+    // Send blob to Hugging Face API
     const response = await fetch(
       "https://api-inference.huggingface.co/models/google/vit-base-patch16-224",
       {
         method: "POST",
         headers: {
           "Authorization": "Bearer " + token,
-          "Content-Type": fileInput.type
+          "Content-Type": imageBlob.type || "image/jpeg"
         },
-        body: arrayBuffer
+        body: imageBlob
       }
     );
 
