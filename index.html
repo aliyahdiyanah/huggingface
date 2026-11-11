@@ -1,135 +1,179 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pulse – Chatbot yang Faham Perasaan</title>
+<title>Pulse – Your Emotion-Aware AI Companion</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-dark: #0b0f19;
-    --card-bg: #131b2e;
-    --card-border: #1e293b;
-    --accent-gold: #f59e0b;
-    --accent-blue: #38bdf8;
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --accent-glow: #8b5cf6;
+    --accent-pink: #ec4899;
+    --accent-cyan: #06b6d4;
   }
   html, body { height: 100%; }
   body {
-    background-color: var(--bg-dark);
-    color: #fff;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    color: #f8fafc;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     margin: 0;
   }
   .app {
-    max-width: 760px;
+    max-width: 780px;
     margin: 0 auto;
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 20px;
   }
+  
+  /* Header Glassmorphism */
   .header {
     background: var(--card-bg);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 12px;
+    border-radius: 20px;
+    padding: 16px 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   }
-  .brand { font-weight: 700; color: var(--accent-gold); font-size: 18px; }
-  .status { font-size: 12px; color: #94a3b8; }
-  .mood-track { height: 8px; border-radius: 6px; background: #ef4444; overflow: hidden; margin-top: 8px; }
-  .mood-fill { height: 100%; width: 50%; background: #22c55e; transition: width 0.5s; }
-  .mood-label { font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; margin-top: 4px; }
+  .brand { 
+    font-weight: 700; 
+    font-size: 20px; 
+    background: linear-gradient(135deg, #c084fc, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .status { font-size: 13px; color: #cbd5e1; font-weight: 500; }
+  
+  /* Mood Tracker Bar */
+  .mood-track { height: 10px; border-radius: 8px; background: rgba(239, 68, 68, 0.2); overflow: hidden; margin-top: 12px; border: 1px solid rgba(255,255,255,0.05); }
+  .mood-fill { height: 100%; width: 50%; background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+  .mood-label { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; margin-top: 6px; font-weight: 500; }
 
+  /* Chat Box */
   .chat {
     flex: 1;
     overflow-y: auto;
     background: var(--card-bg);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 18px;
+    border-radius: 20px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
   }
-  .msg { max-width: 80%; display: flex; flex-direction: column; }
+  .msg { max-width: 82%; display: flex; flex-direction: column; animation: fadeIn 0.3s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  
   .msg.user { align-self: flex-end; align-items: flex-end; }
   .msg.bot { align-self: flex-start; align-items: flex-start; }
+  
   .bubble {
-    padding: 10px 14px;
-    border-radius: 16px;
-    line-height: 1.45;
-    font-size: 15px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    line-height: 1.5;
+    font-size: 14.5px;
     word-break: break-word;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
   .user .bubble {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #0b0f19;
+    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    color: #fff;
     border-bottom-right-radius: 4px;
     font-weight: 500;
   }
   .bot .bubble {
-    background: #1e293b;
-    color: #e2e8f0;
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #f1f5f9;
     border-bottom-left-radius: 4px;
   }
-  .tag { font-size: 11px; color: #94a3b8; margin-top: 3px; }
-  .typing .bubble { color: #94a3b8; letter-spacing: 3px; }
+  .tag { font-size: 11.5px; color: #94a3b8; margin-top: 4px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+  .typing .bubble { color: #94a3b8; letter-spacing: 4px; font-weight: bold; }
 
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 8px; }
+  /* Quick Suggestion Chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 10px; }
   .chip {
-    background: #070a12;
-    border: 1px solid var(--card-border);
-    color: var(--accent-blue);
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c084fc;
     cursor: pointer;
     font-size: 13px;
-    padding: 6px 12px;
+    padding: 7px 14px;
     border-radius: 999px;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
+    font-weight: 500;
   }
-  .chip:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
-
-  .input-row { display: flex; gap: 8px; }
-  .form-control, .form-control:focus {
-    background-color: #070a12;
-    border-color: var(--card-border);
+  .chip:hover { 
+    background: rgba(139, 92, 246, 0.15);
+    border-color: #c084fc; 
     color: #fff;
-    border-radius: 10px;
-    padding: 12px;
+    transform: translateY(-1px);
   }
-  .form-control:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 0.2rem rgba(245,158,11,.2); }
-  .btn-gold {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #0b0f19; font-weight: 700; border: none; border-radius: 10px; padding: 0 22px;
+
+  /* Input Area */
+  .input-row { display: flex; gap: 10px; }
+  .form-control, .form-control:focus {
+    background-color: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 14.5px;
   }
-  .btn-gold:disabled { opacity: .5; color: #0b0f19; }
+  .form-control:focus { 
+    border-color: #8b5cf6; 
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); 
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    color: #fff; 
+    font-weight: 600; 
+    border: none; 
+    border-radius: 14px; 
+    padding: 0 24px;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-gradient:hover { opacity: 0.95; transform: scale(1.02); color: #fff; }
+  .btn-gradient:disabled { opacity: 0.4; transform: none; }
 </style>
 </head>
 <body>
 <div class="app">
 
+  <!-- Header Section -->
   <div class="header">
     <div class="d-flex justify-content-between align-items-center">
-      <span class="brand">💬 Pulse</span>
-      <span class="status" id="status">Memuatkan model AI...</span>
+      <span class="brand">✨ Pulse AI</span>
+      <span class="status" id="status">Loading AI model...</span>
     </div>
     <div class="mood-track"><div class="mood-fill" id="moodFill"></div></div>
-    <div class="mood-label"><span>😡 Negatif</span><span>Mood perbualan</span><span>Positif 😄</span></div>
+    <div class="mood-label"><span>😡 Stressed</span><span>Conversation Mood</span><span>Vibrant 😄</span></div>
   </div>
 
+  <!-- Chat History -->
   <div class="chat" id="chat"></div>
 
+  <!-- Interactive Quick Chips -->
   <div class="chips">
-    <span class="chip" data-t="Hai Pulse!">👋 Hai Pulse!</span>
-    <span class="chip" data-t="Hari ni saya penat sangat dan stress">😩 Penat & stress</span>
-    <span class="chip" data-t="I got promoted today! I am so happy!">🎉 Dapat naik pangkat</span>
-    <span class="chip" data-t="Boss saya marah saya depan semua orang">😡 Kena marah</span>
-    <span class="chip" data-t="Terima kasih sebab dengar">🙏 Terima kasih</span>
+    <span class="chip" data-t="Hi Pulse!">👋 Hi Pulse!</span>
+    <span class="chip" data-t="I am feeling so tired and stressed today">😩 Feeling exhausted</span>
+    <span class="chip" data-t="I got promoted today! I am so happy!">🎉 Got promoted!</span>
+    <span class="chip" data-t="My boss yelled at me in front of everyone">😡 Had a rough day</span>
+    <span class="chip" data-t="Thank you for being here for me">🙏 Thank you</span>
   </div>
 
+  <!-- Message Input Bar -->
   <div class="input-row">
-    <input type="text" id="msgInput" class="form-control" placeholder="Tulis sesuatu pada Pulse..." autocomplete="off" disabled />
-    <button id="sendBtn" class="btn btn-gold" disabled>Hantar</button>
+    <input type="text" id="msgInput" class="form-control" placeholder="Type a message to Pulse..." autocomplete="off" disabled />
+    <button id="sendBtn" class="btn btn-gradient" disabled>Send</button>
   </div>
 </div>
 
@@ -146,68 +190,68 @@ let classifier = null;
 let busy = false;
 let moodScores = [];
 
-/* ---------- Reply bank ---------- */
+/* ---------- Friendly English Reply Bank ---------- */
 const R = {
   greeting: [
-    "Hai! 😊 Apa cerita hari ni?",
-    "Hello! Saya Pulse. Ceritalah apa yang ada dalam kepala awak.",
-    "Hey, lama tunggu awak! Macam mana hari ni?"
+    "Hi there! 😊 How is your day going so far?",
+    "Hello! I'm Pulse. Tell me, what''s on your mind today?",
+    "Hey! So glad you're here. How are you feeling?"
   ],
   how: [
-    "Saya okay je, sebab dapat berbual dengan awak! Awak pula macam mana?",
-    "Alhamdulillah sihat. Awak? Ada apa-apa nak kongsi?"
+    "I'm doing great, especially chatting with you! How about you?",
+    "All systems running smoothly! How are you holding up today?"
   ],
   name: [
-    "Saya Pulse, chatbot yang cuba faham perasaan awak. Saya baca nada mesej awak, lepas tu balas ikut mood. 😄"
+    "I'm Pulse, your empathetic AI companion. I read the emotional tone behind your messages and adapt to match your vibe! ✨"
   ],
   thanks: [
-    "Sama-sama! Saya sentiasa ada kalau awak nak bercerita. 💛",
-    "Small thing! Jaga diri tau."
+    "You're very welcome! I'm always here whenever you need someone to talk to. 💛",
+    "Anytime! Take good care of yourself."
   ],
   bye: [
-    "Bye! Jumpa lagi. Jaga diri tau. 👋",
-    "Okay, take care! Datang lagi bila-bila masa."
+    "Goodbye! Have a wonderful rest of your day. 👋",
+    "Take care! Feel free to drop by whenever you want to chat."
   ],
   veryPos: [
-    "Wah, best gila! 🎉 Ceritalah lagi, saya nak dengar.",
-    "Seronoknya dengar tu! 😄 Apa yang buat awak gembira sangat?",
-    "Mantap! Awak memang layak dapat benda baik tu. 🙌"
+    "That is absolutely wonderful! 🎉 Tell me more, I'd love to hear all about it.",
+    "That's amazing news! 😄 What made you feel so happy today?",
+    "Incredible! You totally deserve this win. 🙌"
   ],
   pos: [
-    "Bagus la kalau macam tu! 😊",
-    "Nice! Nampak awak dalam mood yang okay hari ni.",
-    "Baguslah. Ada apa-apa lagi yang nak diceritakan?"
+    "Love that energy! 😊",
+    "Nice! Sounds like you're having a pretty good day.",
+    "That's wonderful. Is there anything else you'd like to share?"
   ],
   neutral: [
-    "Hmm, menarik. Ceritalah lagi sikit. 🤔",
-    "Oh ye ke? Lepas tu apa jadi?",
-    "Saya dengar ni. Teruskan."
+    "Hmm, interesting. Tell me a bit more about that. 🤔",
+    "Oh I see! What happened next?",
+    "I'm listening. Go on."
   ],
   neg: [
-    "Hmm, nampak macam tak berapa best. Nak cerita lebih lanjut? 😔",
-    "Saya faham, kadang-kadang memang rasa macam tu. Apa yang jadi?",
-    "Aduh, tak seronok tu. Saya ada kat sini kalau awak nak luahkan."
+    "Ah, that doesn't sound very pleasant. Want to talk about it? 😔",
+    "I understand, things can get tough sometimes. What's on your mind?",
+    "I'm sorry you're dealing with that. I'm right here if you want to vent."
   ],
   veryNeg: [
-    "Saya dengar awak betul-betul tak okay sekarang. 😢 Ambil nafas sekejap, saya ada sini.",
-    "Maaf awak kena lalui benda tu. Itu memang berat. Nak cerita apa yang jadi?",
-    "Rasa macam tu memang tak mudah. Awak tak keseorangan, luahkan je dengan saya."
+    "I can tell you're going through a really rough time right now. 😢 Take a deep breath, I'm here for you.",
+    "That sounds so heavy. You don't have to carry it all alone—want to share what happened?",
+    "Sending you virtual support. It's completely okay not to be okay right now."
   ]
 };
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
-/* ---------- Intent rules ---------- */
+/* ---------- Intent Rules ---------- */
 const INTENTS = [
-  [/^(hai|hi|hello|helo|hey|salam|assalamualaikum|yo)\b/, "greeting"],
-  [/(apa khabar|how are you|awak sihat|kamu sihat)/, "how"],
-  [/(siapa (kamu|awak|nama)|who are you|nama (kamu|awak))/, "name"],
-  [/(terima kasih|thank|thanks|tq|tqvm)/, "thanks"],
-  [/(^bye\b|jumpa lagi|selamat tinggal|goodbye|see you)/, "bye"]
+  [/^(hi|hello|hey|greetings|sup|good morning|good afternoon)\b/, "greeting"],
+  [/(how are you|how're you|how do you feel)/, "how"],
+  [/(who are you|what are you|your name)/, "name"],
+  [/(thank you|thanks|thx|tq)/, "thanks"],
+  [/(^bye\b|goodbye|see you|cya|farewell)/, "bye"]
 ];
 
-/* ---------- Small Malay lexicon (the model only knows English) ---------- */
-const NEG_WORDS = ["sedih","marah","penat","bosan","benci","teruk","stress","stres","geram","kecewa","susah","sakit","takut","risau","buruk","menyampah","letih","tertekan","putus asa","down","sunyi","kena marah","fed up","burnout"];
-const POS_WORDS = ["gembira","seronok","bahagia","best","bagus","syukur","suka","sayang","hebat","cantik","mantap","lega","teruja","happy","excited","naik pangkat","lulus","berjaya"];
+/* ---------- Sentiment Lexicon fallback (for extra robustness) ---------- */
+const NEG_WORDS = ["sad","angry","tired","boring","hate","bad","stress","stressed","annoyed","upset","difficult","pain","scared","worried","terrible","exhausted","depressed","lonely","fed up","burnout","crying"];
+const POS_WORDS = ["happy","great","awesome","wonderful","love","good","blessed","nice","amazing","beautiful","fantastic","relieved","excited","joy","proud","success","passed"];
 
 function lexiconSentiment(text) {
   const t = text.toLowerCase();
@@ -235,9 +279,9 @@ function bucket(s) {
 }
 
 const EMOJI = { veryPos: "😄", pos: "🙂", neutral: "😐", neg: "🙁", veryNeg: "😢" };
-const LABEL = { veryPos: "Sangat positif", pos: "Positif", neutral: "Neutral", neg: "Negatif", veryNeg: "Sangat negatif" };
+const LABEL = { veryPos: "Very Positive", pos: "Positive", neutral: "Neutral", neg: "Stressed", veryNeg: "Distressed" };
 
-/* ---------- UI helpers ---------- */
+/* ---------- UI Helpers ---------- */
 function addMsg(who, text, tag) {
   const wrap = document.createElement("div");
   wrap.className = "msg " + who;
@@ -257,7 +301,7 @@ function addMsg(who, text, tag) {
 }
 
 function updateMood(s) {
-  const v = s.label === "POSITIVE" ? s.score : 1 - s.score; // 0..1 positivity
+  const v = s.label === "POSITIVE" ? s.score : 1 - s.score;
   moodScores.push(v);
   const recent = moodScores.slice(-5);
   const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
@@ -285,7 +329,7 @@ async function send(text) {
     updateMood(s);
     reply = pick(R[intent ? intent[1] : key]);
   } catch (e) {
-    reply = "Alamak, saya tersangkut sekejap. Cuba hantar semula?";
+    reply = "Oops, I glitched for a second there! Could you send that again?";
   }
 
   await new Promise(r => setTimeout(r, 600 + Math.random() * 600));
@@ -309,8 +353,8 @@ document.querySelectorAll(".chip").forEach(c =>
   c.addEventListener("click", () => send(c.dataset.t))
 );
 
-/* ---------- Load model ---------- */
-addMsg("bot", "Hai, saya Pulse. 👋 Saya baca perasaan di sebalik mesej awak dan balas ikut mood. Cuba tulis sesuatu!");
+/* ---------- Load Model ---------- */
+addMsg("bot", "Hi! I'm Pulse 👋 I detect the emotion behind your messages and reply to match your mood. Try typing something below!");
 
 try {
   classifier = await pipeline(
@@ -319,18 +363,18 @@ try {
     {
       progress_callback: (p) => {
         if (p.status === "progress" && typeof p.progress === "number") {
-          statusEl.textContent = `Memuat turun model... ${p.progress.toFixed(0)}%`;
+          statusEl.textContent = `Downloading AI... ${p.progress.toFixed(0)}%`;
         }
       }
     }
   );
-  statusEl.textContent = "🟢 Sedia";
+  statusEl.textContent = "🟢 Online & Ready";
   input.disabled = false;
   sendBtn.disabled = false;
   input.focus();
 } catch (err) {
-  statusEl.textContent = "Model gagal dimuatkan";
-  addMsg("bot", "Maaf, model AI gagal dimuatkan: " + err.message);
+  statusEl.textContent = "Failed to load model";
+  addMsg("bot", "Sorry, the AI model failed to load: " + err.message);
 }
 </script>
 </body>
