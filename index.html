@@ -3,379 +3,193 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pulse – Your Emotion-Aware AI Companion</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Pulse – AI Wellbeing Companion</title>
 <style>
-  :root {
-    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --accent-glow: #8b5cf6;
-    --accent-pink: #ec4899;
-    --accent-cyan: #06b6d4;
-  }
-  html, body { height: 100%; }
-  body {
-    background: var(--bg-gradient);
-    color: #f8fafc;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    margin: 0;
-  }
-  .app {
-    max-width: 780px;
-    margin: 0 auto;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-  }
-  
-  /* Header Glassmorphism */
-  .header {
-    background: var(--card-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 16px 22px;
-    margin-bottom: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  }
-  .brand { 
-    font-weight: 700; 
-    font-size: 20px; 
-    background: linear-gradient(135deg, #c084fc, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .status { font-size: 13px; color: #cbd5e1; font-weight: 500; }
-  
-  /* Mood Tracker Bar */
-  .mood-track { height: 10px; border-radius: 8px; background: rgba(239, 68, 68, 0.2); overflow: hidden; margin-top: 12px; border: 1px solid rgba(255,255,255,0.05); }
-  .mood-fill { height: 100%; width: 50%; background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-  .mood-label { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; margin-top: 6px; font-weight: 500; }
-
-  /* Chat Box */
-  .chat {
-    flex: 1;
-    overflow-y: auto;
-    background: var(--card-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
-  }
-  .msg { max-width: 82%; display: flex; flex-direction: column; animation: fadeIn 0.3s ease-out; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  
-  .msg.user { align-self: flex-end; align-items: flex-end; }
-  .msg.bot { align-self: flex-start; align-items: flex-start; }
-  
-  .bubble {
-    padding: 12px 16px;
-    border-radius: 18px;
-    line-height: 1.5;
-    font-size: 14.5px;
-    word-break: break-word;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  .user .bubble {
-    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-    font-weight: 500;
-  }
-  .bot .bubble {
-    background: rgba(30, 41, 59, 0.9);
-    border: 1px solid rgba(255,255,255,0.06);
-    color: #f1f5f9;
-    border-bottom-left-radius: 4px;
-  }
-  .tag { font-size: 11.5px; color: #94a3b8; margin-top: 4px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
-  .typing .bubble { color: #94a3b8; letter-spacing: 4px; font-weight: bold; }
-
-  /* Quick Suggestion Chips */
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 10px; }
-  .chip {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    color: #c084fc;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 7px 14px;
-    border-radius: 999px;
-    transition: all 0.25s ease;
-    font-weight: 500;
-  }
-  .chip:hover { 
-    background: rgba(139, 92, 246, 0.15);
-    border-color: #c084fc; 
-    color: #fff;
-    transform: translateY(-1px);
-  }
-
-  /* Input Area */
-  .input-row { display: flex; gap: 10px; }
-  .form-control, .form-control:focus {
-    background-color: rgba(15, 23, 42, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border-radius: 14px;
-    padding: 14px 18px;
-    font-size: 14.5px;
-  }
-  .form-control:focus { 
-    border-color: #8b5cf6; 
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); 
-  }
-  .btn-gradient {
-    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-    color: #fff; 
-    font-weight: 600; 
-    border: none; 
-    border-radius: 14px; 
-    padding: 0 24px;
-    transition: opacity 0.2s, transform 0.2s;
-  }
-  .btn-gradient:hover { opacity: 0.95; transform: scale(1.02); color: #fff; }
-  .btn-gradient:disabled { opacity: 0.4; transform: none; }
+  :root { --bg:#0b0f19; --card:#131b2e; --line:#1e293b; --gold:#f59e0b; --blue:#38bdf8; }
+  * { box-sizing:border-box; }
+  html,body { height:100%; margin:0; }
+  body { background:var(--bg); color:#e2e8f0; font-family:'Segoe UI',system-ui,sans-serif; }
+  .app { max-width:900px; margin:0 auto; height:100%; display:flex; flex-direction:column; padding:14px; gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; }
+  .top { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .brand { font-weight:700; color:var(--gold); font-size:18px; }
+  .status { font-size:12px; color:#94a3b8; }
+  .notice { font-size:12px; color:#fcd34d; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); border-radius:10px; padding:8px 12px; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .stat { padding:10px 14px; }
+  .stat small { color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+  .stat div { font-size:20px; font-weight:700; margin-top:2px; }
+  .track { height:8px; border-radius:6px; background:#ef4444; overflow:hidden; margin-top:6px; }
+  .fill { height:100%; width:50%; background:#22c55e; transition:width .5s; }
+  details { font-size:12px; color:#94a3b8; padding:0 4px; }
+  details summary { cursor:pointer; color:var(--blue); }
+  .chat { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; min-height:200px; }
+  .msg { max-width:82%; display:flex; flex-direction:column; }
+  .msg.user { align-self:flex-end; align-items:flex-end; }
+  .msg.bot { align-self:flex-start; }
+  .bubble { padding:10px 14px; border-radius:16px; line-height:1.5; font-size:15px; white-space:pre-wrap; word-break:break-word; }
+  .user .bubble { background:linear-gradient(135deg,#f59e0b,#d97706); color:#0b0f19; border-bottom-right-radius:4px; font-weight:500; }
+  .bot .bubble { background:#1e293b; border-bottom-left-radius:4px; }
+  .bubble.crisis { background:#3b1219; border:1px solid #ef4444; }
+  .tag { font-size:11px; color:#94a3b8; margin-top:3px; }
+  .row { display:flex; gap:8px; }
+  input[type=text] { flex:1; background:#070a12; border:1px solid var(--line); color:#fff; border-radius:10px; padding:12px; font-size:15px; }
+  input[type=text]:focus { outline:none; border-color:var(--gold); }
+  button { background:linear-gradient(135deg,#f59e0b,#d97706); color:#0b0f19; font-weight:700; border:0; border-radius:10px; padding:0 20px; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  #loadBtn { padding:10px 18px; }
+  @media (max-width:600px){ .stats { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- Header Section -->
-  <div class="header">
-    <div class="d-flex justify-content-between align-items-center">
-      <span class="brand">✨ Pulse AI</span>
-      <span class="status" id="status">Loading AI model...</span>
-    </div>
-    <div class="mood-track"><div class="mood-fill" id="moodFill"></div></div>
-    <div class="mood-label"><span>😡 Stressed</span><span>Conversation Mood</span><span>Vibrant 😄</span></div>
+  <div class="card top">
+    <span class="brand">💬 Pulse · AI Wellbeing Companion</span>
+    <span class="status" id="status">Model not loaded</span>
+    <button id="loadBtn">Load AI counselor (~400MB, one-time)</button>
   </div>
 
-  <!-- Chat History -->
-  <div class="chat" id="chat"></div>
+  <div class="notice">Pulse is an AI supportive listener, not a licensed therapist, and cannot give medical or mental-health advice. If you are in danger or in crisis, contact your local emergency number or a crisis line (findahelpline.com).</div>
 
-  <!-- Interactive Quick Chips -->
-  <div class="chips">
-    <span class="chip" data-t="Hi Pulse!">👋 Hi Pulse!</span>
-    <span class="chip" data-t="I am feeling so tired and stressed today">😩 Feeling exhausted</span>
-    <span class="chip" data-t="I got promoted today! I am so happy!">🎉 Got promoted!</span>
-    <span class="chip" data-t="My boss yelled at me in front of everyone">😡 Had a rough day</span>
-    <span class="chip" data-t="Thank you for being here for me">🙏 Thank you</span>
+  <div class="stats">
+    <div class="card stat"><small>Latest sentiment</small><div id="sLabel">–</div></div>
+    <div class="card stat"><small>Positivity score</small><div id="sScore">–</div></div>
+    <div class="card stat"><small>Wellbeing index (last 5)</small><div id="sIndex">–</div>
+      <div class="track"><div class="fill" id="fill"></div></div></div>
   </div>
+  <details>
+    <summary>How is this calculated?</summary>
+    <p><b>Positivity score</b> = the probability (0–100%) that your message is POSITIVE, from the DistilBERT SST-2 sentiment model running in your browser.<br>
+    <b>Wellbeing index</b> = the average positivity score of your last 5 messages.<br>
+    The score and mood label are also passed to the AI counselor so its reply matches your emotional state.</p>
+  </details>
 
-  <!-- Message Input Bar -->
-  <div class="input-row">
-    <input type="text" id="msgInput" class="form-control" placeholder="Type a message to Pulse..." autocomplete="off" disabled />
-    <button id="sendBtn" class="btn btn-gradient" disabled>Send</button>
+  <div class="card chat" id="chat"></div>
+
+  <div class="row">
+    <input type="text" id="msgInput" placeholder="Tell Pulse how you're feeling…" autocomplete="off" disabled />
+    <button id="sendBtn" disabled>Send</button>
   </div>
 </div>
 
 <script type="module">
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2";
+import { pipeline, TextStreamer } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2";
 
-const chat = document.getElementById("chat");
-const input = document.getElementById("msgInput");
-const sendBtn = document.getElementById("sendBtn");
-const statusEl = document.getElementById("status");
-const moodFill = document.getElementById("moodFill");
+const $ = id => document.getElementById(id);
+const chat = $("chat"), input = $("msgInput"), sendBtn = $("sendBtn"), statusEl = $("status"), loadBtn = $("loadBtn");
 
-let classifier = null;
-let busy = false;
-let moodScores = [];
+let classifier = null, generator = null, busy = false;
+const scores = [];
+const history = [];
 
-/* ---------- Friendly English Reply Bank ---------- */
-const R = {
-  greeting: [
-    "Hi there! 😊 How is your day going so far?",
-    "Hello! I'm Pulse. Tell me, what''s on your mind today?",
-    "Hey! So glad you're here. How are you feeling?"
-  ],
-  how: [
-    "I'm doing great, especially chatting with you! How about you?",
-    "All systems running smoothly! How are you holding up today?"
-  ],
-  name: [
-    "I'm Pulse, your empathetic AI companion. I read the emotional tone behind your messages and adapt to match your vibe! ✨"
-  ],
-  thanks: [
-    "You're very welcome! I'm always here whenever you need someone to talk to. 💛",
-    "Anytime! Take good care of yourself."
-  ],
-  bye: [
-    "Goodbye! Have a wonderful rest of your day. 👋",
-    "Take care! Feel free to drop by whenever you want to chat."
-  ],
-  veryPos: [
-    "That is absolutely wonderful! 🎉 Tell me more, I'd love to hear all about it.",
-    "That's amazing news! 😄 What made you feel so happy today?",
-    "Incredible! You totally deserve this win. 🙌"
-  ],
-  pos: [
-    "Love that energy! 😊",
-    "Nice! Sounds like you're having a pretty good day.",
-    "That's wonderful. Is there anything else you'd like to share?"
-  ],
-  neutral: [
-    "Hmm, interesting. Tell me a bit more about that. 🤔",
-    "Oh I see! What happened next?",
-    "I'm listening. Go on."
-  ],
-  neg: [
-    "Ah, that doesn't sound very pleasant. Want to talk about it? 😔",
-    "I understand, things can get tough sometimes. What's on your mind?",
-    "I'm sorry you're dealing with that. I'm right here if you want to vent."
-  ],
-  veryNeg: [
-    "I can tell you're going through a really rough time right now. 😢 Take a deep breath, I'm here for you.",
-    "That sounds so heavy. You don't have to carry it all alone—want to share what happened?",
-    "Sending you virtual support. It's completely okay not to be okay right now."
-  ]
+const SYSTEM = `You are Pulse, a warm, empathetic supportive listener, similar to a free counselor chat. You are not a licensed therapist.
+Rules: reply in English in 2-4 short sentences. First acknowledge and validate the person's feelings, then offer one gentle reflection or small coping idea, and end with one open, caring question. Be natural and kind, never clinical. Do not diagnose, do not give medical advice, do not use lists. If the person seems in danger, encourage them to contact local emergency services or a trusted person.`;
+
+const CRISIS = /\b(kill myself|suicid\w*|end my life|want to die|don'?t want to (live|be alive)|self[- ]?harm|hurt myself|cut myself)\b/i;
+const CRISIS_REPLY = "I'm really sorry you're in this much pain, and I'm glad you told me. I'm an AI, and I can't give you the support you deserve right now. If you might act on these thoughts or feel unsafe, please contact your local emergency number now, or a crisis line in your country (findahelpline.com lists them by country). If you can, please also tell someone you trust so you aren't alone tonight. I'm still here with you.";
+
+const FALLBACK = {
+  pos: "That sounds really good, and I'm glad to hear it. What do you think contributed most to feeling this way?",
+  mixed: "It sounds like there's a lot going on, with different feelings mixed together. What's weighing on you or standing out the most right now?",
+  neg: "I'm sorry you're going through this. Your feelings make sense, and it's okay to feel this way. Would you like to tell me more about what happened?"
 };
-const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
-/* ---------- Intent Rules ---------- */
-const INTENTS = [
-  [/^(hi|hello|hey|greetings|sup|good morning|good afternoon)\b/, "greeting"],
-  [/(how are you|how're you|how do you feel)/, "how"],
-  [/(who are you|what are you|your name)/, "name"],
-  [/(thank you|thanks|thx|tq)/, "thanks"],
-  [/(^bye\b|goodbye|see you|cya|farewell)/, "bye"]
-];
-
-/* ---------- Sentiment Lexicon fallback (for extra robustness) ---------- */
-const NEG_WORDS = ["sad","angry","tired","boring","hate","bad","stress","stressed","annoyed","upset","difficult","pain","scared","worried","terrible","exhausted","depressed","lonely","fed up","burnout","crying"];
-const POS_WORDS = ["happy","great","awesome","wonderful","love","good","blessed","nice","amazing","beautiful","fantastic","relieved","excited","joy","proud","success","passed"];
-
-function lexiconSentiment(text) {
-  const t = text.toLowerCase();
-  const neg = NEG_WORDS.filter(w => t.includes(w)).length;
-  const pos = POS_WORDS.filter(w => t.includes(w)).length;
-  if (neg === 0 && pos === 0) return null;
-  if (neg > pos) return { label: "NEGATIVE", score: Math.min(0.97, 0.88 + neg * 0.03) };
-  if (pos > neg) return { label: "POSITIVE", score: Math.min(0.97, 0.88 + pos * 0.03) };
-  return { label: "POSITIVE", score: 0.5 };
+function moodLabel(p) {
+  if (p >= 0.85) return "Very positive";
+  if (p >= 0.65) return "Positive";
+  if (p >= 0.35) return "Mixed";
+  if (p >= 0.15) return "Low";
+  return "Very low";
 }
 
-async function sentimentOf(text) {
-  const lex = lexiconSentiment(text);
-  if (lex) return lex;
-  const out = await classifier(text, { top_k: 1 });
-  return out[0];
+function addMsg(who, text, cls) {
+  const w = document.createElement("div"); w.className = "msg " + who;
+  const b = document.createElement("div"); b.className = "bubble" + (cls ? " " + cls : ""); b.textContent = text;
+  w.appendChild(b); chat.appendChild(w); chat.scrollTop = chat.scrollHeight;
+  return { wrap: w, bubble: b };
 }
 
-function bucket(s) {
-  const pos = s.label === "POSITIVE";
-  const c = s.score;
-  if (c < 0.65) return "neutral";
-  if (pos) return c > 0.95 ? "veryPos" : "pos";
-  return c > 0.95 ? "veryNeg" : "neg";
-}
-
-const EMOJI = { veryPos: "😄", pos: "🙂", neutral: "😐", neg: "🙁", veryNeg: "😢" };
-const LABEL = { veryPos: "Very Positive", pos: "Positive", neutral: "Neutral", neg: "Stressed", veryNeg: "Distressed" };
-
-/* ---------- UI Helpers ---------- */
-function addMsg(who, text, tag) {
-  const wrap = document.createElement("div");
-  wrap.className = "msg " + who;
-  const b = document.createElement("div");
-  b.className = "bubble";
-  b.textContent = text;
-  wrap.appendChild(b);
-  if (tag) {
-    const t = document.createElement("div");
-    t.className = "tag";
-    t.textContent = tag;
-    wrap.appendChild(t);
-  }
-  chat.appendChild(wrap);
-  chat.scrollTop = chat.scrollHeight;
-  return wrap;
-}
-
-function updateMood(s) {
-  const v = s.label === "POSITIVE" ? s.score : 1 - s.score;
-  moodScores.push(v);
-  const recent = moodScores.slice(-5);
-  const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
-  moodFill.style.width = (avg * 100).toFixed(0) + "%";
+async function analyze(text) {
+  const out = await classifier(text, { top_k: 2 });
+  const pos = out.find(o => o.label === "POSITIVE");
+  const p = pos ? pos.score : 1 - out[0].score;
+  scores.push(p);
+  const recent = scores.slice(-5);
+  const index = recent.reduce((a, b) => a + b, 0) / recent.length;
+  $("sLabel").textContent = moodLabel(p);
+  $("sScore").textContent = (p * 100).toFixed(1) + "%";
+  $("sIndex").textContent = (index * 100).toFixed(0) + "/100";
+  $("fill").style.width = (index * 100).toFixed(0) + "%";
+  return p;
 }
 
 async function send(text) {
   text = text.trim();
-  if (!text || busy || !classifier) return;
-  busy = true;
-  sendBtn.disabled = true;
-  input.value = "";
+  if (!text || busy || !generator) return;
+  busy = true; sendBtn.disabled = true; input.value = "";
 
-  const userMsg = addMsg("user", text);
-  const typing = addMsg("bot typing", "•••");
+  const u = addMsg("user", text);
+  let p = 0.5;
+  try { p = await analyze(text); } catch (e) {}
+  const tag = document.createElement("div"); tag.className = "tag";
+  tag.textContent = `${moodLabel(p)} · positivity ${(p * 100).toFixed(0)}%`;
+  u.wrap.appendChild(tag);
 
-  let key, tag, reply;
-  const t = text.toLowerCase();
-  const intent = INTENTS.find(([re]) => re.test(t));
+  if (CRISIS.test(text)) {
+    addMsg("bot", CRISIS_REPLY, "crisis");
+    history.push({ role: "user", content: text }, { role: "assistant", content: CRISIS_REPLY });
+    busy = false; sendBtn.disabled = false; input.focus();
+    return;
+  }
 
+  const bot = addMsg("bot", "…");
+  let reply = "";
   try {
-    const s = await sentimentOf(text);
-    key = bucket(s);
-    tag = `${EMOJI[key]} ${LABEL[key]} · ${(s.score * 100).toFixed(0)}%`;
-    updateMood(s);
-    reply = pick(R[intent ? intent[1] : key]);
+    const sys = SYSTEM + `\nThe user's latest message was detected as "${moodLabel(p)}" (positivity ${(p * 100).toFixed(0)}%). Match your tone to this.`;
+    const messages = [{ role: "system", content: sys }, ...history.slice(-8), { role: "user", content: text }];
+    const streamer = new TextStreamer(generator.tokenizer, {
+      skip_prompt: true, skip_special_tokens: true,
+      callback_function: (t) => { reply += t; bot.bubble.textContent = reply; chat.scrollTop = chat.scrollHeight; }
+    });
+    const out = await generator(messages, { max_new_tokens: 180, do_sample: true, temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, streamer });
+    reply = (out[0].generated_text.at(-1).content || reply).trim();
+    bot.bubble.textContent = reply;
   } catch (e) {
-    reply = "Oops, I glitched for a second there! Could you send that again?";
+    reply = p >= 0.65 ? FALLBACK.pos : p >= 0.35 ? FALLBACK.mixed : FALLBACK.neg;
+    bot.bubble.textContent = reply;
   }
-
-  await new Promise(r => setTimeout(r, 600 + Math.random() * 600));
-  typing.remove();
-  if (tag) {
-    const tg = document.createElement("div");
-    tg.className = "tag";
-    tg.textContent = tag;
-    userMsg.appendChild(tg);
-  }
-  addMsg("bot", reply);
-
-  busy = false;
-  sendBtn.disabled = false;
-  input.focus();
+  history.push({ role: "user", content: text }, { role: "assistant", content: reply });
+  busy = false; sendBtn.disabled = false; input.focus();
 }
 
+async function loadModels() {
+  loadBtn.disabled = true;
+  const hasGPU = !!navigator.gpu;
+  const prog = (label) => (p) => {
+    if (p.status === "progress" && typeof p.progress === "number") statusEl.textContent = `${label}… ${p.progress.toFixed(0)}%`;
+  };
+  try {
+    classifier = await pipeline("sentiment-analysis", "Xenova/distilbert-base-uncased-finetuned-sst-2-english", { progress_callback: prog("Loading sentiment model") });
+    generator = await pipeline("text-generation", "onnx-community/Qwen2.5-0.5B-Instruct", {
+      device: hasGPU ? "webgpu" : "wasm",
+      dtype: hasGPU ? "q4f16" : "q8",
+      progress_callback: prog("Loading counselor model")
+    });
+    statusEl.textContent = hasGPU ? "🟢 Ready (WebGPU)" : "🟢 Ready (CPU mode, replies may be slow)";
+    loadBtn.style.display = "none";
+    input.disabled = false; sendBtn.disabled = false; input.focus();
+  } catch (err) {
+    statusEl.textContent = "Failed to load: " + err.message;
+    loadBtn.disabled = false; loadBtn.textContent = "Retry";
+  }
+}
+
+loadBtn.addEventListener("click", loadModels);
 sendBtn.addEventListener("click", () => send(input.value));
-input.addEventListener("keydown", (e) => { if (e.key === "Enter") send(input.value); });
-document.querySelectorAll(".chip").forEach(c =>
-  c.addEventListener("click", () => send(c.dataset.t))
-);
+input.addEventListener("keydown", e => { if (e.key === "Enter") send(input.value); });
 
-/* ---------- Load Model ---------- */
-addMsg("bot", "Hi! I'm Pulse 👋 I detect the emotion behind your messages and reply to match your mood. Try typing something below!");
-
-try {
-  classifier = await pipeline(
-    "sentiment-analysis",
-    "Xenova/distilbert-base-uncased-finetuned-sst-2-english",
-    {
-      progress_callback: (p) => {
-        if (p.status === "progress" && typeof p.progress === "number") {
-          statusEl.textContent = `Downloading AI... ${p.progress.toFixed(0)}%`;
-        }
-      }
-    }
-  );
-  statusEl.textContent = "🟢 Online & Ready";
-  input.disabled = false;
-  sendBtn.disabled = false;
-  input.focus();
-} catch (err) {
-  statusEl.textContent = "Failed to load model";
-  addMsg("bot", "Sorry, the AI model failed to load: " + err.message);
-}
+addMsg("bot", "Hi, I'm Pulse. 💛 This is a safe space to talk about how you're feeling. Click “Load AI counselor” above to start, then tell me what's on your mind.");
 </script>
 </body>
 </html>
