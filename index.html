@@ -37,6 +37,7 @@
   input[type=text]:focus { outline:none; border-color:var(--gold); }
   button { background:linear-gradient(135deg,#f59e0b,#d97706); color:#0b0f19; font-weight:700; border:0; border-radius:10px; padding:0 20px; cursor:pointer; }
   button:disabled { opacity:.5; cursor:not-allowed; }
+  select { background:#070a12; color:#e2e8f0; border:1px solid var(--line); border-radius:8px; padding:8px; font-size:13px; }
   #loadBtn { padding:10px 18px; }
   @media (max-width:600px){ .stats { grid-template-columns:1fr; } }
 </style>
@@ -47,7 +48,11 @@
   <div class="card top">
     <span class="brand">💬 Pulse · AI Wellbeing Companion</span>
     <span class="status" id="status">Model not loaded</span>
-    <button id="loadBtn">Load AI counselor (~400MB, one-time)</button>
+    <select id="modelSel">
+      <option value="onnx-community/Qwen2.5-1.5B-Instruct">Better quality · 1.5B (~1GB, one-time)</option>
+      <option value="onnx-community/Qwen2.5-0.5B-Instruct">Faster · 0.5B (~400MB, one-time)</option>
+    </select>
+    <button id="loadBtn">Load AI counselor</button>
   </div>
 
   <div class="notice">Pulse is an AI supportive listener, not a licensed therapist, and cannot give medical or mental-health advice. If you are in danger or in crisis, contact your local emergency number or a crisis line (findahelpline.com).</div>
@@ -83,16 +88,24 @@ let classifier = null, generator = null, busy = false;
 const scores = [];
 const history = [];
 
-const SYSTEM = `You are Pulse, a warm, empathetic supportive listener, similar to a free counselor chat. You are not a licensed therapist.
-Rules: reply in English in 2-4 short sentences. First acknowledge and validate the person's feelings, then offer one gentle reflection or small coping idea, and end with one open, caring question. Be natural and kind, never clinical. Do not diagnose, do not give medical advice, do not use lists. If the person seems in danger, encourage them to contact local emergency services or a trusted person.`;
+const SYSTEM = `You are Pulse, a warm, empathetic counselor-style supportive listener, like a caring friend with counseling skills. You are not a licensed therapist.
+Always respond. Never refuse and never say you cannot help with everyday worries, stress, tiredness or work pressure.
+Every reply must flow as natural paragraphs (no lists, no headings) and follow this order: (1) reflect and validate the person's feeling in your own words; (2) give one or two concrete, practical, gentle suggestions that fit their exact situation; (3) end with one open, caring question.
+Length: 4 to 6 sentences. Plain, warm English. Do not diagnose or give medical advice. If the person seems in danger, urge them to contact local emergency services or someone they trust.`;
+
+const FEWSHOT = [
+  { role: "user", content: "I have a presentation tomorrow and I'm so nervous I can't sleep." },
+  { role: "assistant", content: "That sounds really stressful, and it makes sense that your mind is racing when something important is coming up. A couple of things might help tonight: write down the three main points you want to make so they're out of your head and on paper, and try a few slow breaths, in for four counts and out for six, to settle your body. You've probably prepared more than you think. What part of the presentation is worrying you the most?" }
+];
+const REFUSAL = /(can't|cannot|unable to) (help|assist)|as an ai/i;
 
 const CRISIS = /\b(kill myself|suicid\w*|end my life|want to die|don'?t want to (live|be alive)|self[- ]?harm|hurt myself|cut myself)\b/i;
 const CRISIS_REPLY = "I'm really sorry you're in this much pain, and I'm glad you told me. I'm an AI, and I can't give you the support you deserve right now. If you might act on these thoughts or feel unsafe, please contact your local emergency number now, or a crisis line in your country (findahelpline.com lists them by country). If you can, please also tell someone you trust so you aren't alone tonight. I'm still here with you.";
 
 const FALLBACK = {
-  pos: "That sounds really good, and I'm glad to hear it. What do you think contributed most to feeling this way?",
-  mixed: "It sounds like there's a lot going on, with different feelings mixed together. What's weighing on you or standing out the most right now?",
-  neg: "I'm sorry you're going through this. Your feelings make sense, and it's okay to feel this way. Would you like to tell me more about what happened?"
+  pos: "That sounds really good, and I'm glad to hear it. It can help to notice what contributed to this feeling so you can repeat it on harder days. What do you think made the biggest difference?",
+  mixed: "It sounds like you're juggling a lot at once, which can feel draining. One small step that often helps is picking just the single most urgent thing and doing it first, then taking a short break. What feels most pressing for you right now?",
+  neg: "I'm sorry you're going through this, and your feelings make sense. Try taking a slow breath or two and giving yourself permission to pause before deciding what to do next. Would you like to tell me more about what happened?"
 };
 
 function looksBroken(t) {
@@ -154,14 +167,14 @@ async function send(text) {
   let reply = "";
   try {
     const sys = SYSTEM + `\nThe user's latest message was detected as "${moodLabel(p)}" (positivity ${(p * 100).toFixed(0)}%). Match your tone to this.`;
-    const messages = [{ role: "system", content: sys }, ...history.slice(-8), { role: "user", content: text }];
+    const messages = [{ role: "system", content: sys }, ...FEWSHOT, ...history.slice(-8), { role: "user", content: text }];
     const streamer = new TextStreamer(generator.tokenizer, {
       skip_prompt: true, skip_special_tokens: true,
       callback_function: (t) => { reply += t; bot.bubble.textContent = reply; chat.scrollTop = chat.scrollHeight; }
     });
-    const out = await generator(messages, { max_new_tokens: 160, do_sample: true, temperature: 0.6, top_p: 0.9, repetition_penalty: 1.05, streamer });
+    const out = await generator(messages, { max_new_tokens: 240, do_sample: true, temperature: 0.7, top_p: 0.9, repetition_penalty: 1.05, streamer });
     reply = (out[0].generated_text.at(-1).content || reply).trim();
-    if (looksBroken(reply)) throw new Error("degenerate output");
+    if (looksBroken(reply) || REFUSAL.test(reply) || reply.length < 40) throw new Error("degenerate output");
     bot.bubble.textContent = reply;
   } catch (e) {
     reply = p >= 0.65 ? FALLBACK.pos : p >= 0.35 ? FALLBACK.mixed : FALLBACK.neg;
@@ -172,24 +185,24 @@ async function send(text) {
 }
 
 async function loadModels() {
-  loadBtn.disabled = true;
+  loadBtn.disabled = true; $("modelSel").disabled = true;
   const hasGPU = !!navigator.gpu && !location.search.includes("cpu");
   const prog = (label) => (p) => {
     if (p.status === "progress" && typeof p.progress === "number") statusEl.textContent = `${label}… ${p.progress.toFixed(0)}%`;
   };
   try {
     classifier = await pipeline("sentiment-analysis", "Xenova/twitter-roberta-base-sentiment-latest", { progress_callback: prog("Loading sentiment model") });
-    generator = await pipeline("text-generation", "onnx-community/Qwen2.5-0.5B-Instruct", {
+    generator = await pipeline("text-generation", $("modelSel").value, {
       device: hasGPU ? "webgpu" : "wasm",
       dtype: hasGPU ? "q4" : "q8",
       progress_callback: prog("Loading counselor model")
     });
     statusEl.textContent = hasGPU ? "🟢 Ready (WebGPU)" : "🟢 Ready (CPU mode, replies may be slow)";
-    loadBtn.style.display = "none";
+    loadBtn.style.display = "none"; $("modelSel").style.display = "none";
     input.disabled = false; sendBtn.disabled = false; input.focus();
   } catch (err) {
     statusEl.textContent = "Failed to load: " + err.message;
-    loadBtn.disabled = false; loadBtn.textContent = "Retry";
+    loadBtn.disabled = false; $("modelSel").disabled = false; loadBtn.textContent = "Retry";
   }
 }
 
@@ -197,7 +210,7 @@ loadBtn.addEventListener("click", loadModels);
 sendBtn.addEventListener("click", () => send(input.value));
 input.addEventListener("keydown", e => { if (e.key === "Enter") send(input.value); });
 
-addMsg("bot", "Hi, I'm Pulse. 💛 This is a safe space to talk about how you're feeling. Click “Load AI counselor” above to start, then tell me what's on your mind.");
+addMsg("bot", "Hi, I'm Pulse. 💛 This is a safe space to talk about how you're feeling. Choose a model above and click “Load AI counselor”, then tell me what's on your mind.");
 </script>
 </body>
 </html>
